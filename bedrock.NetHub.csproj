@@ -19,9 +19,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="utils\" />
-    <Folder Include="startup\" />
-    <Folder Include="api\" />
+    <Folder Include="Api\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 </Project>

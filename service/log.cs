@@ -9,7 +9,7 @@ namespace bedrock.NetHub.service
     public partial class Logger(string nameSpace)
     {
         private readonly string nameSpace = nameSpace;
-        private readonly Hashtable colorMap = new() {
+        private readonly Dictionary<string,string> colorMap = new Dictionary<string, string> {
             { "§0", "\x1b{30m" }, // Black
             { "§1", "\x1b{34m" }, // Dark Blue
             { "§2", "\x1b{32m" }, // Dark Green
