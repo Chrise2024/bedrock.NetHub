@@ -12,10 +12,10 @@ namespace bedrock.NetHub.Utils
         public bool cacheUsed;
     }
 
-    public struct VersionMappingSchema
+    public struct VersionMappingSchema(string apiVersion, string releaseVersion)
     {
-        public string apiVersion;
-        public string releaseVersion;
+        public string apiVersion = apiVersion;
+        public string releaseVersion = releaseVersion;
     }
     public struct BehaviorPacksSchema
     {
@@ -35,6 +35,19 @@ namespace bedrock.NetHub.Utils
         public string version;
     }
 
+    public struct PermissionsGroupSchema(List<string> permissions, string extends = "")
+    {
+        public string extends = extends;
+        public List<string> permissions = permissions;
+    }
+
+    public struct ResolvedCommandSchema(string NameSpace, string resolvedText,string permission = null)
+    {
+        public string NameSpace = NameSpace;
+        public string resolvedText = resolvedText;
+        public string permission = permission;
+    }
+
     public abstract class Schemas
     {
         public static string ManifestFileGenerator(
@@ -48,47 +61,47 @@ namespace bedrock.NetHub.Utils
             string apiVersion
             )
         {
-            string Templet = @"{
+            string Templet = @"{{
         ""format_version"": 2,
-        ""header"": {
+        ""header"": {{
           ""name"": ""{0}"",
           ""description"": ""{1}"",
-          ""uuid"": ""{3}"",
-          ""version"": {4},
-          ""min_engine_version"": {5},
-        },
+          ""uuid"": ""{2}"",
+          ""version"": [{3}],
+          ""min_engine_version"": [{4}]
+        }},
         ""modules"": [
-          {
+          {{
             ""description"": ""Script resources"",
             ""language"": ""javascript"",
             ""type"": ""script"",
-            ""uuid"": ""{6}"",
-            ""version"": {4},
-            ""entry"": ""scripts/{7}"",
-          },
+            ""uuid"": ""{5}"",
+            ""version"": [{3}],
+            ""entry"": ""scripts/{6}""
+          }}
         ],
         ""dependencies"": [
-          {
+          {{
             ""module_name"": ""@minecraft/server"",
-            ""version"": {8},
-          },
-          {
+            ""version"": ""{7}""
+          }},
+          {{
             ""module_name"": ""@minecraft/server-net"",
-            ""version"": ""1.0.0-beta"",
-          },
-          {
+            ""version"": ""1.0.0-beta""
+          }},
+          {{
             ""module_name"": ""@minecraft/server-admin"",
-            ""version"": ""1.0.0-beta"",
-          },
-        ],
-      }";
+            ""version"": ""1.0.0-beta""
+          }}
+        ]
+      }}";
             return string.Format(
                 Templet,
                 name,
                 description,
                 UUID,
-                version,
-                BDSVersion,
+                string.Join(',', version),
+                string.Join(',', BDSVersion),
                 scriptModuleUUID,
                 entryScriptName,
                 apiVersion
