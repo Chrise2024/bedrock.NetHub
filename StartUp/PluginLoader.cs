@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Collections;
 using System.Collections.Generic;
 using bedrock.NetHub;
@@ -15,11 +13,12 @@ namespace bedrock.NetHub.StartUp
     public abstract class PluginLoader
     {
         public static readonly string pluginEntryScriptName = "main.js";
-        public static void Load(string pluginPath,string levelRoot)
+        public static int Load(string pluginPath,string levelRoot)
         {
+            int loadedPluginNumber = 0;
             FileInfo[] pluginFileInfo = new DirectoryInfo(pluginPath).GetFiles();
             string originalWorldBehaviorPacksFilePath = Path.Join(levelRoot, "world_behavior_packs.json.original");
-            string worldBehaviorPacksFilePath = Path.Join("world_behavior_packs.json");
+            string worldBehaviorPacksFilePath = Path.Join(levelRoot, "world_behavior_packs.json");
             if (!File.Exists(originalWorldBehaviorPacksFilePath))
             {
                 if (!File.Exists(worldBehaviorPacksFilePath))
@@ -32,7 +31,7 @@ namespace bedrock.NetHub.StartUp
                 }
             }
 
-            JObject worldBehaviorPacks = FileIO.ReadAsJSON(originalWorldBehaviorPacksFilePath);
+            JArray worldBehaviorPacks = FileIO.ReadAsJArray(originalWorldBehaviorPacksFilePath);
             List<string> plugins = [];
             foreach(FileInfo index in pluginFileInfo)
             {
@@ -48,9 +47,7 @@ namespace bedrock.NetHub.StartUp
             Program.stdhubLOGGER.Info("If this does not match, please report an issue.");
             List<VersionMappingSchema> versionMapping = BDSVersion.GetMinecraftServerApiVersionMapping();
             bool status = true;
-            VersionMappingSchema currentVersionMap;
-            currentVersionMap.apiVersion = "0.0.0";
-            currentVersionMap.releaseVersion = "0.0.0";
+            VersionMappingSchema currentVersionMap = new("0.0.0", "0.0.0");
             foreach (VersionMappingSchema versionMap in versionMapping)
             {
                 if (versionMap.releaseVersion.Equals(currentBDSVersionString))
@@ -80,7 +77,6 @@ namespace bedrock.NetHub.StartUp
                 throw new Exception("Version not supported");
             }
 
-            int loadedPluginNumber = 0;
             foreach(string index in plugins)
             {
                 try
@@ -107,14 +103,14 @@ namespace bedrock.NetHub.StartUp
                                 "§eBut when it does not function as expected, do not report any issue.\n"
                                 );
                         }
-
                         string pluginUUID = Guid.NewGuid().ToString();
                         string scriptModuleUUID = Guid.NewGuid().ToString();
                         List<int> pluginVersionArray = TypeCast.VersionStringToArray(pluginVersionString);
-                        Program.stdhubLOGGER.Info(string.Format("Loading plugin §b{0§r...}", pluginName));
+                        Program.stdhubLOGGER.Info(string.Format("Loading plugin §b{0}§r...", pluginName));
                         string tempPluginName = "__stdhub_plugins_" + pluginUUID;
                         string pluginRoot = Path.Join(Program.GetLevelRoot(), "behavior_packs", tempPluginName);
                         string pluginScriptRoot = Path.Join(pluginRoot, "scripts");
+                        
                         FileIO.EnsurePath(pluginRoot);
                         FileIO.EnsurePath(pluginScriptRoot);
 
@@ -134,9 +130,10 @@ namespace bedrock.NetHub.StartUp
                         FileIO.EnsureFile(scriptPath);
                         sw = new(scriptEntry.Open());
                         FileIO.WriteFile(scriptPath, sw.ReadToEnd());
-                        worldBehaviorPacks.Add(JsonConvert.DeserializeObject(string.Format("{\"pack_id\": \"{0}\",\"version\": {1}}", pluginUUID, pluginVersionArray)));
+                        worldBehaviorPacks.Add(JsonConvert.DeserializeObject(string.Format("{{\"pack_id\": \"{0}\",\"version\": [{1}]}}", pluginUUID, string.Join(',',pluginVersionArray))));
 
                         FileIO.WriteAsJSON(worldBehaviorPacksFilePath, worldBehaviorPacks);
+                        loadedPluginNumber++;
                     }
                     else
                     {
@@ -146,8 +143,10 @@ namespace bedrock.NetHub.StartUp
                 catch (Exception ex)
                 {
                     Program.stdhubLOGGER.Info(string.Format("Bad plugin {0}:",index) + ex.Message);
+                    return 0;
                 }
             }
+            return loadedPluginNumber;
         }
     }
 }

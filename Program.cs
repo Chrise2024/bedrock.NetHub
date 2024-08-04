@@ -6,6 +6,9 @@ using System;
 using System.Diagnostics;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using System.Net;
+using System.Text;
+using bedrock.NetHub.Service;
 
 namespace bedrock.NetHub
 {
@@ -29,6 +32,12 @@ namespace bedrock.NetHub
 
         private static string BDSVersionString = string.Empty;
 
+        private static readonly HttpListener listener = new();
+
+        private static readonly PermissionsGroupManager permissionGroupManager = new();
+
+        private static readonly CommandManager commandManager = new();
+
         public static string GetLevelRoot()
         {
             return levelRoot;
@@ -36,6 +45,22 @@ namespace bedrock.NetHub
         public static Dictionary<string, string> GetServerProperties()
         {
             return serverProperties;
+        }
+        public static PermissionsGroupManager GetPermissionsGroupManager()
+        {
+            return permissionGroupManager;
+        }public static Terminal GetTerminal()
+        {
+            return TERMINAL;
+        }
+        public static HttpListener GetHttpListener()
+        {
+            return listener;
+        }
+
+        public static CommandManager GetCommandManager()
+        {
+            return commandManager;
         }
         static void Main(string[] args)
         {
@@ -67,7 +92,7 @@ namespace bedrock.NetHub
                 Environment.Exit(1);
             }
 
-            serverProperties = FileIO.ReadProperties(Path.Join(pluginsRoot, "server.properties"));
+            serverProperties = FileIO.ReadProperties(Path.Join(programRoot, "server.properties"));
             if (serverProperties == null) {
                 stdhubLOGGER.Info("§cserver.properties file is wrong. Please check your installation.");
                 Environment.Exit(1);
@@ -102,14 +127,19 @@ namespace bedrock.NetHub
 
             FileIO.EnsurePath(pluginsRoot);
 
-            FileInfo[] oldPluginFileInfo = new DirectoryInfo(Path.Join(levelRoot, "behavior_packs")).GetFiles();
-            foreach (FileInfo index in oldPluginFileInfo)
+            DirectoryInfo[] oldPluginFileInfo = new DirectoryInfo(Path.Join(levelRoot, "behavior_packs")).GetDirectories();
+            foreach (DirectoryInfo index in oldPluginFileInfo)
             {
                 if (index.Name.StartsWith("__stdhub_plugins"))
                 {
                     Directory.Delete(index.FullName, true);
                 }
             }
+            stdhubLOGGER.Info("§aRemoved old plugins.");
+            TERMINAL = new(bdsCommand);
+            //TERMINAL.RedirectedInput();
+            //PluginLoader.Load(pluginsRoot,levelRoot);
         }
+
     }
 }

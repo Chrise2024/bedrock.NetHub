@@ -47,9 +47,7 @@ namespace bedrock.NetHub.Utils
                     {
                         //Console.WriteLine(VersionRegex().Matches(index)[0].Value);
                         string reducedVersion = ReducedVersionPrefixRegex().Matches(index)![0].Value;
-                        VersionMappingSchema VMT;
-                        VMT.apiVersion = ApiVersionRegex().Matches(reducedVersion)[0].Value;
-                        VMT.releaseVersion = ApiVersionRegex().Replace(reducedVersion,"")[1..];
+                        VersionMappingSchema VMT = new(ApiVersionRegex().Matches(reducedVersion)[0].Value, ApiVersionRegex().Replace(reducedVersion, "")[1..]);
                         versionMapping.Add(VMT);
                     }
                 }
@@ -59,7 +57,7 @@ namespace bedrock.NetHub.Utils
             }
             else
             {
-                versionMapping = FileIO.ReadAsJSON(cachePath).Value<List<VersionMappingSchema>>();
+                versionMapping = FileIO.ReadAsJArray(cachePath).ToObject<List<VersionMappingSchema>>();
                 return versionMapping;
             }
         }

@@ -21,11 +21,16 @@ namespace bedrock.NetHub.Utils
                 return;
             }
         }
-        public static void EnsureFile(string tPath)
+        public static void EnsureFile(string tPath,string initData = null)
         {
             if (!File.Exists(tPath))
             {
-                File.Create(tPath);
+                EnsurePath(Path.GetDirectoryName(tPath));
+                File.Create(tPath).Close();
+                if (initData != null)
+                {
+                    WriteFile(tPath, initData);
+                }
                 return;
             }
             else
@@ -34,16 +39,36 @@ namespace bedrock.NetHub.Utils
             }
         }
 
+        public static void SafeDeleteFile(string tPath)
+        {
+            if (File.Exists(tPath))
+            {
+                File.Delete(tPath);
+            }
+        }
+
+        public static void SafeDeletePath(string tPath)
+        {
+            if (Path.Exists(tPath))
+            {
+                Directory.Delete(tPath);
+            }
+        }
+
         public static string ReadFile(string tPath)
         {
             StreamReader file = new(tPath);
-            return file.ReadToEnd();
+            string Content = file.ReadToEnd();
+            file.Close();
+            return Content;
         }
 
         public static void WriteFile(string tPath,string Content)
         {
+            EnsureFile(tPath);
             StreamWriter file = new(tPath);
             file.Write(Content);
+            file.Close();
             return;
         }
 
@@ -53,14 +78,33 @@ namespace bedrock.NetHub.Utils
             return JObject.Parse(ReadFile(tPath));
         }
 
+        public static T ReadAsJSON<T>(string tPath)
+        {
+
+            return JObject.Parse(ReadFile(tPath)).ToObject<T>();
+        }
+        public static JArray ReadAsJArray(string tPath)
+        {
+
+            return JArray.Parse(ReadFile(tPath));
+        }
+
         public static void WriteAsJSON<T>(string tPath,T Content)
         {
+            EnsureFile(tPath);
             WriteFile(tPath,JsonConvert.SerializeObject(Content));
             return;
         }
 
         public static void WriteAsJSON(string tPath, JObject Content)
         {
+            EnsureFile(tPath);
+            WriteFile(tPath, JsonConvert.SerializeObject(Content));
+            return;
+        }
+        public static void WriteAsJSON(string tPath, JArray Content)
+        {
+            EnsureFile(tPath);
             WriteFile(tPath, JsonConvert.SerializeObject(Content));
             return;
         }

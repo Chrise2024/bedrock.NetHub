@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using bedrock.NetHub;
 using bedrock.NetHub.Event;
 using System.ComponentModel.Design;
+using bedrock.NetHub.Service;
 
 namespace bedrock.NetHub.service
 {
@@ -12,24 +13,34 @@ namespace bedrock.NetHub.service
     {
         private Process bdsProcess = new();
 
-        private StreamWriter bdsWriter = null;
+        private StreamWriter bdsWriter;
+
+        private readonly CommandManager commandManager = Program.GetCommandManager();
 
         private static bool testForServerPackStack = true;
         public Terminal(string bdsCommand)
         {
             bdsProcess.StartInfo.FileName = bdsCommand;
             bdsProcess.StartInfo.UseShellExecute = false;
-            bdsProcess.StartInfo.RedirectStandardInput = false;
+            bdsProcess.StartInfo.RedirectStandardInput = true;
             bdsProcess.StartInfo.RedirectStandardOutput = true;
             bdsProcess.StartInfo.RedirectStandardError = true;
             bdsProcess.OutputDataReceived += BDSStdOutHandler;
             bdsProcess.ErrorDataReceived += BDSStdErrorHandler;
             bdsProcess.Start();
 
-            //bdsWriter = bdsProcess.StandardInput;
+            bdsWriter = bdsProcess.StandardInput;
 
             bdsProcess.BeginOutputReadLine();
             bdsProcess.BeginErrorReadLine();
+            string InputCommand = "";
+            do
+            {
+                InputCommand = Console.ReadLine();
+                commandManager.ProcessConsoleCommand(InputCommand);
+                bdsWriter.WriteLine(InputCommand);
+            } while (!InputCommand.Equals("stop"));
+            bdsWriter.Close();
             bdsProcess.WaitForExit();
         }
         private static void BDSStdOutHandler(object sender, DataReceivedEventArgs e)
