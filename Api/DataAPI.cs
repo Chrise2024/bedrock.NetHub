@@ -18,11 +18,11 @@ namespace bedrock.NetHub.Api
                 context.Response.ContentType = "text/plain;charset=UTF-8";
                 context.Response.AddHeader("Content-type", "text/plain");
                 context.Response.ContentEncoding = Encoding.UTF8;
+                StreamWriter writer = new(context.Response.OutputStream);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("namespace") || !ReqJSON.ContainsKey("subDataPath"))
                 {
+                    writer.Write("{}");
                     context.Response.StatusCode = 400;
-                    context.Response.Close();
-                    return;
                 }
                 else
                 {
@@ -30,25 +30,26 @@ namespace bedrock.NetHub.Api
                     string dataFileDirname = Path.GetDirectoryName(dataFilePath);
                     if (!File.Exists(dataFilePath))
                     {
+                        writer.Write("{}");
                         context.Response.StatusCode = 404;
-                        context.Response.Close();
-                        return;
                     }
                     else
                     {
-                        Stream stream = context.Response.OutputStream;
-                        byte[] returnByteArr = Encoding.UTF8.GetBytes(FileIO.ReadFile(dataFilePath));
-                        stream.Write(returnByteArr, 0, returnByteArr.Length);
+                        writer.Write(FileIO.ReadFile(dataFilePath));
                         context.Response.StatusCode = 200;
-                        context.Response.Close();
-                        return;
                     }
+                    writer.Close();
+                    context.Response.Close();
+                    return;
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                StreamWriter writer = new(context.Response.OutputStream);
+                writer.Write("{}");
                 context.Response.StatusCode = 400;
+                writer.Close();
                 context.Response.Close();
                 return;
             }
@@ -63,11 +64,11 @@ namespace bedrock.NetHub.Api
                 context.Response.ContentType = "text/plain;charset=UTF-8";
                 context.Response.AddHeader("Content-type", "text/plain");
                 context.Response.ContentEncoding = Encoding.UTF8;
+                StreamWriter writer = new(context.Response.OutputStream);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("namespace") || !ReqJSON.ContainsKey("subDataPath") || !ReqJSON.ContainsKey("data"))
                 {
+                    writer.Write("{}");
                     context.Response.StatusCode = 400;
-                    context.Response.Close();
-                    return;
                 }
                 else
                 {
@@ -75,15 +76,20 @@ namespace bedrock.NetHub.Api
                     string dataFileDirname = Path.GetDirectoryName(dataFilePath);
                     FileIO.EnsureFile(dataFilePath);
                     FileIO.WriteFile(dataFilePath,ReqJSON["data"].Value<string>());
+                    writer.Write("{}");
                     context.Response.StatusCode = 200;
-                    context.Response.Close();
-                    return;
                 }
+                writer.Close();
+                context.Response.Close();
+                return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                StreamWriter writer = new(context.Response.OutputStream);
+                writer.Write("{}");
                 context.Response.StatusCode = 400;
+                writer.Close();
                 context.Response.Close();
                 return;
             }
@@ -98,11 +104,11 @@ namespace bedrock.NetHub.Api
                 context.Response.ContentType = "text/plain;charset=UTF-8";
                 context.Response.AddHeader("Content-type", "text/plain");
                 context.Response.ContentEncoding = Encoding.UTF8;
+                StreamWriter writer = new(context.Response.OutputStream);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("namespace") || !ReqJSON.ContainsKey("subDataPath"))
                 {
+                    writer.Write("{}");
                     context.Response.StatusCode = 400;
-                    context.Response.Close();
-                    return;
                 }
                 else
                 {
@@ -110,23 +116,27 @@ namespace bedrock.NetHub.Api
                     string dataFileDirname = Path.GetDirectoryName(dataFilePath);
                     if (!File.Exists(dataFilePath))
                     {
+                        writer.Write("{}");
                         context.Response.StatusCode = 404;
-                        context.Response.Close();
-                        return;
                     }
                     else
                     {
                         File.Delete(dataFilePath);
+                        writer.Write("{}");
                         context.Response.StatusCode = 200;
-                        context.Response.Close();
-                        return;
                     }
                 }
+                writer.Close();
+                context.Response.Close();
+                return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                StreamWriter writer = new(context.Response.OutputStream);
+                writer.Write("{}");
                 context.Response.StatusCode = 400;
+                writer.Close();
                 context.Response.Close();
                 return;
             }

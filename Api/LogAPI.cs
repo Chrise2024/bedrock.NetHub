@@ -1,17 +1,17 @@
-﻿using bedrock.NetHub.Utils;
+﻿using bedrock.NetHub.service;
+using bedrock.NetHub.Utils;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
-using System.IO;
 using System.Text;
 
 namespace bedrock.NetHub.Api
 {
-    public abstract class ConfigAPI
+    public abstract class LogAPI
     {
-        public static void Read(HttpListenerContext context)
+        public static void Log(HttpListenerContext context)
         {
             try
             {
@@ -21,24 +21,16 @@ namespace bedrock.NetHub.Api
                 context.Response.AddHeader("Content-type", "text/plain");
                 context.Response.ContentEncoding = Encoding.UTF8;
                 StreamWriter writer = new(context.Response.OutputStream);
-                if (ReqJSON == null || !ReqJSON.ContainsKey("namespace") || !ReqJSON.ContainsKey("defaults"))
+                if (ReqJSON == null || !ReqJSON.ContainsKey("namespace") || !ReqJSON.ContainsKey("content"))
                 {
                     writer.Write("{}");
                     context.Response.StatusCode = 400;
                 }
                 else
                 {
-                    string pluginRoot = Path.Join(Program.pluginsRoot, ReqJSON["namespace"].Value<string>());
-                    string configFilePath = ReqJSON.ContainsKey("subConfigName") ? Path.Join(pluginRoot, ReqJSON["subConfigName"].Value<string>() + ".json") : Path.Join(pluginRoot, "config.json");
-                    if (!File.Exists(configFilePath))
-                    {
-                        writer.Write(ReqJSON["defaults"].Value<string>());
-                        context.Response.StatusCode = 404;
-                    }
-                    else
-                    {
-                        writer.Write(FileIO.ReadFile(configFilePath));
-                    }
+                    Logger.GeneralLog(ReqJSON["namespace"].Value<string>(), ReqJSON["content"].Value<string>());
+                    writer.Write("{}");
+                    context.Response.StatusCode = 200;
                 }
                 writer.Close();
                 context.Response.Close();

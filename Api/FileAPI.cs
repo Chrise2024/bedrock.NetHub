@@ -17,26 +17,28 @@ namespace bedrock.NetHub.Api
                 context.Response.ContentType = "text/plain;charset=UTF-8";
                 context.Response.AddHeader("Content-type", "text/plain");
                 context.Response.ContentEncoding = Encoding.UTF8;
+                StreamWriter writer = new(context.Response.OutputStream);
                 if (!File.Exists(tPath))
                 {
+                    writer.Write("{}");
                     context.Response.StatusCode = 404;
-                    context.Response.Close();
-                    return;
                 }
                 else
                 {
-                    Stream stream = context.Response.OutputStream;
-                    byte[] returnByteArr = Encoding.UTF8.GetBytes(FileIO.ReadFile(tPath));
-                    stream.Write(returnByteArr, 0, returnByteArr.Length);
+                    writer.Write("{}");
                     context.Response.StatusCode = 200;
-                    context.Response.Close();
-                    return;
                 }
+                writer.Close();
+                context.Response.Close();
+                return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                StreamWriter writer = new(context.Response.OutputStream);
+                writer.Write("{}");
                 context.Response.StatusCode = 400;
+                writer.Close();
                 context.Response.Close();
                 return;
             }
