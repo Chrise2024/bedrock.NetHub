@@ -48,6 +48,27 @@ namespace bedrock.NetHub.Utils
         public string permission = permission;
     }
 
+    public struct SubmitCommandSchema
+    {
+        public string playerId;
+        public string playerName;
+        public string commandString;
+        public bool playerIsOp;
+    }
+
+    public struct XuidMapSchema(Dictionary<string, string> name2xuid, Dictionary<string, string> xuid2name)
+    {
+        public Dictionary<string,string> name2xuid = name2xuid;
+        public Dictionary<string,string> xuid2name = xuid2name;
+    }
+
+    public struct ScriptEventSchema(string eventName, string commandString, string? playerId)
+    {
+        public string eventName = eventName;
+        public string commandString = commandString;
+        public string? playerId = playerId;
+    }
+
     public abstract class Schemas
     {
         public static string ManifestFileGenerator(
@@ -61,40 +82,42 @@ namespace bedrock.NetHub.Utils
             string apiVersion
             )
         {
-            string Templet = @"{{
-        ""format_version"": 2,
-        ""header"": {{
-          ""name"": ""{0}"",
-          ""description"": ""{1}"",
-          ""uuid"": ""{2}"",
-          ""version"": [{3}],
-          ""min_engine_version"": [{4}]
-        }},
-        ""modules"": [
-          {{
+            string Templet = 
+
+@"{{
+    ""format_version"": 2,
+    ""header"": {{
+        ""name"": ""{0}"",
+        ""description"": ""{1}"",
+        ""uuid"": ""{2}"",
+        ""version"": [{3}],
+        ""min_engine_version"": [{4}]
+    }},
+    ""modules"": [
+        {{
             ""description"": ""Script resources"",
             ""language"": ""javascript"",
             ""type"": ""script"",
             ""uuid"": ""{5}"",
             ""version"": [{3}],
             ""entry"": ""scripts/{6}""
-          }}
-        ],
-        ""dependencies"": [
-          {{
+        }}
+    ],
+    ""dependencies"": [
+        {{
             ""module_name"": ""@minecraft/server"",
             ""version"": ""{7}""
-          }},
-          {{
+        }},
+        {{
             ""module_name"": ""@minecraft/server-net"",
             ""version"": ""1.0.0-beta""
-          }},
-          {{
+        }},
+        {{
             ""module_name"": ""@minecraft/server-admin"",
             ""version"": ""1.0.0-beta""
-          }}
-        ]
-      }}";
+        }}
+    ]
+}}";
             return string.Format(
                 Templet,
                 name,
