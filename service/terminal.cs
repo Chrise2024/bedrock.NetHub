@@ -6,6 +6,8 @@ using bedrock.NetHub;
 using bedrock.NetHub.Event;
 using System.ComponentModel.Design;
 using bedrock.NetHub.Service;
+using Newtonsoft.Json;
+using bedrock.NetHub.Utils;
 
 namespace bedrock.NetHub.service
 {
@@ -18,6 +20,8 @@ namespace bedrock.NetHub.service
         private readonly CommandManager commandManager = Program.GetCommandManager();
 
         private static bool testForServerPackStack = true;
+
+        private static readonly XuidManager xuidManager = Program.GetXuidManager();
         public Terminal(string bdsCommand)
         {
             bdsProcess.StartInfo.FileName = bdsCommand;
@@ -27,21 +31,38 @@ namespace bedrock.NetHub.service
             bdsProcess.StartInfo.RedirectStandardError = true;
             bdsProcess.OutputDataReceived += BDSStdOutHandler;
             bdsProcess.ErrorDataReceived += BDSStdErrorHandler;
+        }
+
+        public void Start()
+        {
             bdsProcess.Start();
 
             bdsWriter = bdsProcess.StandardInput;
 
             bdsProcess.BeginOutputReadLine();
             bdsProcess.BeginErrorReadLine();
-            string InputCommand = "";
-            do
-            {
-                InputCommand = Console.ReadLine();
-                commandManager.ProcessConsoleCommand(InputCommand);
-                bdsWriter.WriteLine(InputCommand);
-            } while (!InputCommand.Equals("stop"));
-            bdsWriter.Close();
+            InputHandler();
             bdsProcess.WaitForExit();
+        }
+
+        private async void InputHandler()
+        {
+            await Task.Run(() =>
+            {
+                string InputCommand = "";
+                while (!InputCommand.Equals("stop"))
+                {
+                    InputCommand = Console.ReadLine();
+                    commandManager.ProcessConsoleCommand(InputCommand);
+                    if (InputCommand.Equals("666666"))
+                    {
+                        SendCommand("stop");
+                        break;
+                    }
+                    bdsWriter.WriteLine(InputCommand);
+                }
+                bdsWriter.Close();
+            });
         }
         private static void BDSStdOutHandler(object sender, DataReceivedEventArgs e)
         {
@@ -62,6 +83,7 @@ namespace bedrock.NetHub.service
                         }
                         else
                         {
+                            xuidManager.HandleXuidLogging(Content);
                             Program.BDSLOGGER.Info(Level+": "+Content,timeString);
                         }
                     }
@@ -82,9 +104,10 @@ namespace bedrock.NetHub.service
             bdsWriter.WriteLine(command);
         }
 
-        public void TriggerScriptEvent(string nameSpace,ScriptEvent Event)
+        public void TriggerScriptEvent(string nameSpace, ScriptEventSchema Event)
         {
-            SendCommand(string.Format("scriptevent {0}:{1} {2}",nameSpace,Event.eventName,Event.ToString()));
+            //Console.WriteLine(string.Format("scriptevent {0}:{1} {2}", nameSpace, "NACC", JsonConvert.SerializeObject(new CommandDispatchEvent("AAA","BBB"))));
+            SendCommand(string.Format("scriptevent {0}:{1} {2}",nameSpace, "CommandDispatchEvent", JsonConvert.SerializeObject(Event)));
         }
 
         [GeneratedRegex("^\\[(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}:\\d{3}) (\\w+)] (.*)$")]
