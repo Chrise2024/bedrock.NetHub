@@ -1,5 +1,6 @@
 ﻿using bedrock.NetHub.Event;
 using bedrock.NetHub.Utils;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
@@ -16,19 +17,27 @@ namespace bedrock.NetHub.Service
 
         public bool RegisterCommand(string NameSpace,string commandName, string permission = null) {
             string cmdNameWithNs = NameSpace + ":" + commandName;
-            string permissionWithNs = permission != null ? NameSpace + ":" + permission : "";
+            string permissionWithNs;
+            if (permission == null || permission.Length == 0)
+            {
+                permissionWithNs = "";
+            }
+            else
+            {
+                permissionWithNs = NameSpace + ":" + permission;
+            }
             if (Commands.ContainsKey(cmdNameWithNs))
             {
                 return false;
             }
-            if (DefaultCommandNames.TryGetValue(cmdNameWithNs, out string? value))
+            if (DefaultCommandNames.TryGetValue(commandName, out string? value))
             {
                 Program.stdhubLOGGER.Info(string.Format("Command naming conflict: '{0}' & '{1}'.", value, cmdNameWithNs));
                 Program.stdhubLOGGER.Info(string.Format("Consider removing one of the plugins, or call the latter with prefix {0}.",NameSpace));
             }
             else
             {
-                DefaultCommandNames.Add(cmdNameWithNs, commandName);
+                DefaultCommandNames.Add(commandName, cmdNameWithNs);
             }
             Commands.Add(cmdNameWithNs, permissionWithNs);
             Program.GetPermissionsGroupManager().AddPermissionKey(permissionWithNs);
@@ -63,7 +72,7 @@ namespace bedrock.NetHub.Service
                 if (DefaultCommandNames.TryGetValue(commandName, out string? defaultCommand)) 
                 {
                     string NameSpace = defaultCommand.Split(":")[0];
-                    return new ResolvedCommandSchema(NameSpace, commandString, Commands[commandName]);
+                    return new ResolvedCommandSchema(NameSpace, commandString, Commands[defaultCommand]);
                 }
                 else
                 {
@@ -87,7 +96,7 @@ namespace bedrock.NetHub.Service
                         return 403;
                     }
                 }
-                Program.GetTerminal().TriggerScriptEvent(resolved.NameSpace,new CommandDispatchEvent(resolved.resolvedText,playerID));
+                Program.GetTerminal().TriggerScriptEvent(resolved.NameSpace,new ScriptEventSchema("CommandDispatchEvent", resolved.resolvedText,playerID));
                 return 200;
             }
         }
