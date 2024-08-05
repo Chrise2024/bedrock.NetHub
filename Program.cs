@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using System.Net;
 using System.Text;
 using bedrock.NetHub.Service;
+using System.Net.NetworkInformation;
 
 namespace bedrock.NetHub
 {
@@ -28,15 +29,17 @@ namespace bedrock.NetHub
 
         private static Terminal TERMINAL = null;
 
+        private static HttpManager httpManager = null;
+
         private static List<int> BDSVersionArray = [];
 
         private static string BDSVersionString = string.Empty;
 
-        private static readonly HttpListener listener = new();
-
         private static readonly PermissionsGroupManager permissionGroupManager = new();
 
         private static readonly CommandManager commandManager = new();
+
+        private static readonly XuidManager xuidManager = new();
 
         public static string GetLevelRoot()
         {
@@ -53,14 +56,40 @@ namespace bedrock.NetHub
         {
             return TERMINAL;
         }
-        public static HttpListener GetHttpListener()
+        public static HttpManager GetHttpManager()
         {
-            return listener;
+            return httpManager;
         }
 
         public static CommandManager GetCommandManager()
         {
             return commandManager;
+        }
+
+        public static XuidManager GetXuidManager()
+        {
+            return xuidManager;
+        }
+        private static int GetAllAvailableTCPPort(int startPort = 8000)
+        {
+            IPGlobalProperties iPGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
+            IPEndPoint[] iPEndPoints = iPGlobalProperties.GetActiveTcpListeners();
+            List<int> APorts = [];
+            foreach (IPEndPoint i in iPEndPoints)
+            {
+                if (i.Port > startPort && i.Port <= 65535)
+                {
+                    APorts.Add(i.Port);
+                }
+            }
+            if (APorts.Count > 0)
+            {
+                return APorts.Min();
+            }
+            else
+            {
+                return -1;
+            }
         }
         static void Main(string[] args)
         {
@@ -136,10 +165,29 @@ namespace bedrock.NetHub
                 }
             }
             stdhubLOGGER.Info("§aRemoved old plugins.");
-            TERMINAL = new(bdsCommand);
-            //TERMINAL.RedirectedInput();
-            //PluginLoader.Load(pluginsRoot,levelRoot);
-        }
+            PluginLoader.Load(pluginsRoot, levelRoot);
 
+            //int port = GetAllAvailableTCPPort(8000);
+            int port = 8001;
+            if (port == -1)
+            {
+                throw new Exception("No Avaliable Port");
+            }
+            else
+            {
+                string listenerUrl = $"http://127.0.0.1:{port}/";
+                FileIO.WriteFile(Path.Join(programRoot,"config", "default", "variables.json"),JsonConvert.SerializeObject(new { backendAddress = listenerUrl }));
+                TERMINAL = new(bdsCommand);
+                httpManager = new(listenerUrl);
+                Task.Run(async () =>
+                {
+                    httpManager.Start();
+                });
+                //httpManager.Start();
+                stdhubLOGGER.Info($"Backend server started on *:{port}");
+                TERMINAL.Start();
+                stdhubLOGGER.Info("Starting BDS process...");
+            }
+        }
     }
 }

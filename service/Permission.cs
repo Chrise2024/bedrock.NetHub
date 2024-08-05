@@ -48,12 +48,7 @@ namespace bedrock.NetHub.Service
                 PermissionsGroupMapCache.Add(GroupName, FindPermissionsOfGroup(GroupName));
             }
             FileIO.EnsureFile(playersJsonPath,"{}");
-            JObject parsedPlayersJson = FileIO.ReadAsJSON(playersJsonPath);
-            foreach(var propertie in parsedPlayersJson.Properties())
-            {
-                JArray groupArray = parsedPlayersJson[propertie.Name].Value<JArray>();
-                PlayerGroupingInfo.Add(propertie.Name, groupArray.ToObject<List<string>>());
-            }
+            PlayerGroupingInfo = FileIO.ReadAsJSON<Dictionary<string, List<string>>>(playersJsonPath);
         }
 
         public List<string> FindPermissionsOfGroup(string groupName)
@@ -90,7 +85,7 @@ namespace bedrock.NetHub.Service
             return [.. PermissionsGroupMap.Keys];
         }
 
-        public void CreateGroup(string groupName,string extendsFrom = "")
+        public void CreateGroup(string groupName,string extendsFrom)
         {
             PermissionsGroupSchema groupData = new([],extendsFrom);
             if (!PermissionKeys.Contains(groupName))
@@ -145,13 +140,17 @@ namespace bedrock.NetHub.Service
 
         public bool PermissionExistsInGroup(string groupName,string premission)
         {
-            if (!PermissionsGroupMap.TryGetValue(groupName, out PermissionsGroupSchema value))
+            if (premission.Length == 0)
+            {
+                return true;
+            }
+            if (!PermissionsGroupMapCache.TryGetValue(groupName, out List<string> value))
             {
                 return false;
             }
             else
             {
-                return value.permissions.Contains(premission);
+                return value.Contains(premission);
             }
         }
 
@@ -196,7 +195,10 @@ namespace bedrock.NetHub.Service
                 }
                 return false;
             }
-            return false;
+            else
+            {
+                return PermissionExistsInGroup("default", permission);
+            }
         }
 
         public List<string> GetGroupsOfPlayer(string xuid)

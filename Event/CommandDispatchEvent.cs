@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace bedrock.NetHub.Event
 {
-    public class CommandDispatchEvent :ScriptEvent
+    public class CommandDispatchEvent(string commandString, string playerId = null) : ScriptEvent()
     {
-        public readonly string eventName = "CommandDispatchEvent";
+        public new readonly string eventName = "CommandDispatchEvent";
 
-        public CommandDispatchEvent(string commandString,string playerId = null) : base() {}
+        public readonly string commandString = commandString;
 
+        public readonly string playerId = playerId;
     }
 }

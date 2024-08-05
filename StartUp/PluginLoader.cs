@@ -96,12 +96,11 @@ namespace bedrock.NetHub.StartUp
 
                         if (!currentBDSVersionString.Equals(targetMinecraftVersion))
                         {
-                            Program.stdhubLOGGER.Info(
-                                string.Format("§eThe Minecraft version requirement of plugin §b{0}§e (§c{1}§e)\n", pluginName, targetMinecraftVersion) +
-                                string.Format("§edoes not match current version (§a{0}§e).\n", currentBDSVersionString) +
-                                "§eWe will still enable this plugin.\n" +
-                                "§eBut when it does not function as expected, do not report any issue.\n"
-                                );
+                            Program.stdhubLOGGER.Info(string.Format("§eThe Minecraft version requirement of plugin §b{0}§e (§c{1}§e)", pluginName, targetMinecraftVersion));
+                            Program.stdhubLOGGER.Info(string.Format("§edoes not match current version (§a{0}§e).", currentBDSVersionString));
+                            Program.stdhubLOGGER.Info("§eWe will still enable this plugin.");
+                            Program.stdhubLOGGER.Info("§eWe will still enable this plugin.");
+                            Program.stdhubLOGGER.Info("§eBut when it does not function as expected, do not report any issue.");
                         }
                         string pluginUUID = Guid.NewGuid().ToString();
                         string scriptModuleUUID = Guid.NewGuid().ToString();

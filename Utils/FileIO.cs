@@ -74,13 +74,11 @@ namespace bedrock.NetHub.Utils
 
         public static JObject ReadAsJSON (string tPath)
         {
-
             return JObject.Parse(ReadFile(tPath));
         }
 
         public static T ReadAsJSON<T>(string tPath)
         {
-
             return JObject.Parse(ReadFile(tPath)).ToObject<T>();
         }
         public static JArray ReadAsJArray(string tPath)
