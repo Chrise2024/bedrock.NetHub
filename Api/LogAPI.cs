@@ -1,5 +1,6 @@
-﻿using bedrock.NetHub.service;
-using bedrock.NetHub.Utils;
+﻿using bedrock.NetHub.Utils;
+using bedrock.NetHub.Service;
+using bedrock.NetHub.service;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -15,35 +16,23 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
+                
+                JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("namespace") || !ReqJSON.ContainsKey("content"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
                     Logger.GeneralLog(ReqJSON["namespace"].Value<string>(), ReqJSON["content"].Value<string>());
-                    writer.Write("{}");
-                    context.Response.StatusCode = 200;
+                    Http.WriteRequest(context, 200, "{}");
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }

@@ -1,9 +1,11 @@
 ﻿using bedrock.NetHub.Utils;
+using bedrock.NetHub.Service;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace bedrock.NetHub.Api
 {
@@ -13,34 +15,22 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
+                JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("name"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
-                    writer.Write(Program.GetXuidManager().GetXuidByName(ReqJSON["name"].Value<string>()));
-                    context.Response.StatusCode = 200;
+                    string xuid = Program.GetXuidManager().GetXuidByName(ReqJSON["name"].Value<string>());
+                    Http.WriteRequest(context, 200, new { data = xuid});
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }
@@ -49,34 +39,22 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
+                JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("xuid"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
-                    writer.Write(Program.GetXuidManager().GetNameByXuid(ReqJSON["xuid"].Value<string>()));
-                    context.Response.StatusCode = 200;
+                    string name = Program.GetXuidManager().GetNameByXuid(ReqJSON["xuid"].Value<string>());
+                    Http.WriteRequest(context, 200, new { data = name });
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }

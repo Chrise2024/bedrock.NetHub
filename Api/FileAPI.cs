@@ -1,8 +1,11 @@
 ﻿using bedrock.NetHub.Utils;
+using bedrock.NetHub.Service;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using Newtonsoft.Json.Linq;
+using bedrock.NetHub.service;
 
 namespace bedrock.NetHub.Api
 {
@@ -12,34 +15,41 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sr = new(context.Request.InputStream);
-                string tPath = sr.ReadToEnd();
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
-                if (!File.Exists(tPath))
+                JObject ReqJSON = Http.ReadRequest(context);
+                if (ReqJSON == null || !ReqJSON.ContainsKey("path") || !ReqJSON.ContainsKey("response"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 404;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 200;
+                    string tPath = ReqJSON["path"].Value<string>();
+                    string respType = ReqJSON["response"].Value<string>();
+                    if (!File.Exists(tPath))
+                    {
+                        Http.WriteRequest(context, 404, "{}");
+                    }
+                    else
+                    {
+                        if (respType.Equals("text"))
+                        {
+                            Http.WriteRequest(context, 200, new { data = new { result = FileIO.ReadFile(tPath) } });
+                        }
+                        else if (respType.Equals("bytes"))
+                        {
+                            Http.WriteRequest(context, 200, new { data = new { result = FileIO.ReadAsBytes(tPath) } });
+                        }
+                        else
+                        {
+                            Http.WriteRequest(context, 404, "{}");
+                        }
+                    }
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }

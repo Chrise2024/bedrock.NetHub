@@ -1,4 +1,5 @@
 ﻿using bedrock.NetHub.Utils;
+using bedrock.NetHub.Service;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -13,16 +14,11 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
+                
+                JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("namespace") || !ReqJSON.ContainsKey("subDataPath"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
@@ -30,27 +26,19 @@ namespace bedrock.NetHub.Api
                     string dataFileDirname = Path.GetDirectoryName(dataFilePath);
                     if (!File.Exists(dataFilePath))
                     {
-                        writer.Write("{}");
-                        context.Response.StatusCode = 404;
+                        Http.WriteRequest(context, 404, "{}");
                     }
                     else
                     {
-                        writer.Write(FileIO.ReadFile(dataFilePath));
-                        context.Response.StatusCode = 200;
+                        Http.WriteRequest(context, 200, new { data = FileIO.ReadFile(dataFilePath) });
                     }
-                    writer.Close();
-                    context.Response.Close();
                     return;
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }
@@ -59,16 +47,11 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
+                
+                JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("namespace") || !ReqJSON.ContainsKey("subDataPath") || !ReqJSON.ContainsKey("data"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
@@ -76,21 +59,14 @@ namespace bedrock.NetHub.Api
                     string dataFileDirname = Path.GetDirectoryName(dataFilePath);
                     FileIO.EnsureFile(dataFilePath);
                     FileIO.WriteFile(dataFilePath,ReqJSON["data"].Value<string>());
-                    writer.Write("{}");
-                    context.Response.StatusCode = 200;
+                    Http.WriteRequest(context, 200, "{}");
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }
@@ -99,16 +75,11 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
+                
+                JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("namespace") || !ReqJSON.ContainsKey("subDataPath"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
@@ -116,28 +87,20 @@ namespace bedrock.NetHub.Api
                     string dataFileDirname = Path.GetDirectoryName(dataFilePath);
                     if (!File.Exists(dataFilePath))
                     {
-                        writer.Write("{}");
-                        context.Response.StatusCode = 404;
+                        Http.WriteRequest(context, 404, "{}");
                     }
                     else
                     {
                         File.Delete(dataFilePath);
-                        writer.Write("{}");
-                        context.Response.StatusCode = 200;
+                        Http.WriteRequest(context, 200, "{}");
                     }
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }

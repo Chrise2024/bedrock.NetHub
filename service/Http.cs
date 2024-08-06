@@ -4,9 +4,59 @@ using System.Collections.Generic;
 using System.Net;
 using System.Collections;
 using bedrock.NetHub.Api;
+using System.Text;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace bedrock.NetHub.Service
 {
+    public abstract class Http
+    {
+        public static JObject ReadRequest(HttpListenerContext context)
+        {
+            StreamReader sr = new(context.Request.InputStream);
+            return JObject.Parse(sr.ReadToEnd());
+        }
+
+        public static T ReadRequest<T>(HttpListenerContext context)
+        {
+            StreamReader sr = new(context.Request.InputStream);
+            return JObject.Parse(sr.ReadToEnd()).ToObject<T>();
+        }
+
+        public static string ReadRequestAsString(HttpListenerContext context)
+        {
+            StreamReader sr = new(context.Request.InputStream);
+            return sr.ReadToEnd();
+        }
+
+        public static void WriteRequest(HttpListenerContext context, int statusCode, string content)
+        {
+            StreamWriter sw = new(context.Response.OutputStream);
+            sw.Write(content);
+            context.Response.StatusCode = statusCode;
+            sw.Close();
+            context.Response.Close();
+        }
+
+        public static void WriteRequest(HttpListenerContext context, int statusCode, object content)
+        {
+            StreamWriter sw = new(context.Response.OutputStream);
+            sw.Write(JsonConvert.SerializeObject(content));
+            context.Response.StatusCode = statusCode;
+            sw.Close();
+            context.Response.Close();
+        }
+
+        public static void WriteRequest<T>(HttpListenerContext context, int statusCode, T content)
+        {
+            StreamWriter sw = new(context.Response.OutputStream);
+            sw.Write(JsonConvert.SerializeObject(content));
+            context.Response.StatusCode = statusCode;
+            sw.Close();
+            context.Response.Close();
+        }
+    }
     public partial class HttpManager
     {
         private string RoorUrl;
@@ -50,11 +100,13 @@ namespace bedrock.NetHub.Service
         {
             string RawUrl = context.Request.RawUrl[2..];
             string[] Options = RawUrl.Split('/');
+            context.Response.ContentType = "text/plain;charset=UTF-8";
+            context.Response.AddHeader("Content-type", "text/plain");
+            context.Response.ContentEncoding = Encoding.UTF8;
             if (Options.Length < 1 || Options.Length > 2)
             {
                 Program.stdhubLOGGER.Info("Bad Request Path");
-                context.Response.StatusCode = 400;
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
             }
             else if (Options.Length == 1)
             {
@@ -67,8 +119,7 @@ namespace bedrock.NetHub.Service
                         LogAPI.Log(context);
                         break;
                     default:
-                        context.Response.StatusCode = 404;
-                        context.Response.Close();
+                        Http.WriteRequest(context, 404, "{}");
                         break;
                 }
             }
@@ -83,8 +134,7 @@ namespace bedrock.NetHub.Service
                         }
                         else
                         {
-                            context.Response.StatusCode = 404;
-                            context.Response.Close();
+                            Http.WriteRequest(context, 404, "{}");
                         }
                         break;
                     case "data":
@@ -102,8 +152,7 @@ namespace bedrock.NetHub.Service
                         }
                         else
                         {
-                            context.Response.StatusCode = 404;
-                            context.Response.Close();
+                            Http.WriteRequest(context, 404, "{}");
                         }
                         break;
                     case "command":
@@ -117,8 +166,7 @@ namespace bedrock.NetHub.Service
                         }
                         else
                         {
-                            context.Response.StatusCode = 404;
-                            context.Response.Close();
+                            Http.WriteRequest(context, 404, "{}");
                         }
                         break;
                     case "xuid":
@@ -132,8 +180,7 @@ namespace bedrock.NetHub.Service
                         }
                         else
                         {
-                            context.Response.StatusCode = 404;
-                            context.Response.Close();
+                            Http.WriteRequest(context, 404, "{}");
                         }
                         break;
                     case "perm":
@@ -176,14 +223,12 @@ namespace bedrock.NetHub.Service
                                 PermissionAPI.ListAllGroups(context);
                                 break;
                             default:
-                                context.Response.StatusCode = 404;
-                                context.Response.Close();
+                                Http.WriteRequest(context, 404, "{}");
                                 break;
                         }
                         break;
                     default:
-                        context.Response.StatusCode = 404;
-                        context.Response.Close();
+                        Http.WriteRequest(context, 404, "{}");
                         break;
                 }
             }

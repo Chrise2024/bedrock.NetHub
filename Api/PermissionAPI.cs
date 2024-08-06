@@ -20,44 +20,30 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
+                JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("groupName"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
                     if (ReqJSON.ContainsKey("extendsFrom"))
                     {
-                        PermissionsGroupManager.CreateGroup(ReqJSON["groupName"].Value<string>(), ReqJSON["groupName"].Value<string>());
-                        writer.Write("{}");
-                        context.Response.StatusCode = 200;
+                        PermissionsGroupManager.CreateGroup(ReqJSON["groupName"].Value<string>(), ReqJSON["extendsFrom"].Value<string>());
+                        Http.WriteRequest(context, 200, "{}");
                     }
                     else
                     {
                         PermissionsGroupManager.CreateGroup(ReqJSON["groupName"].Value<string>(),"");
-                        writer.Write("{}");
-                        context.Response.StatusCode = 200;
+                        Http.WriteRequest(context, 200, "{}");
                     }
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }
@@ -66,35 +52,22 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
+                JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("groupName") || !ReqJSON["groupName"].Value<string>().Equals("default"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
                     PermissionsGroupManager.DeleteGroup(ReqJSON["groupName"].Value<string>());
-                    writer.Write("{}");
-                    context.Response.StatusCode = 200;
+                    Http.WriteRequest(context, 200, "{}");
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }
@@ -103,35 +76,22 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
+                JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("groupName") || !ReqJSON.ContainsKey("permission"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
                     PermissionsGroupManager.GrantPermissionToGroup(ReqJSON["groupName"].Value<string>(), ReqJSON["permission"].Value<string>());
-                    writer.Write("{}");
-                    context.Response.StatusCode = 200;
+                    Http.WriteRequest(context, 200, "{}");
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }
@@ -140,35 +100,22 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
+                JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("groupName") || !ReqJSON.ContainsKey("permission"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
                     PermissionsGroupManager.RevokePermissionFromGroup(ReqJSON["groupName"].Value<string>(), ReqJSON["permission"].Value<string>());
-                    writer.Write("{}");
-                    context.Response.StatusCode = 200;
+                    Http.WriteRequest(context, 200, "{}");
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }
@@ -177,35 +124,22 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
+                JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("xuid") || !ReqJSON.ContainsKey("permission"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
                     bool res = PermissionsGroupManager.TestPermission(ReqJSON["xuid"].Value<string>(), ReqJSON["permission"].Value<string>());
-                    writer.Write(JsonConvert.SerializeObject(new { data = res }));
-                    context.Response.StatusCode = 200;
+                    Http.WriteRequest(context, 200, JsonConvert.SerializeObject(new { data = res }));
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }
@@ -214,35 +148,22 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
+                JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("xuid") || !ReqJSON.ContainsKey("groupName"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
                     PermissionsGroupManager.AddPlayerToGroup(ReqJSON["xuid"].Value<string>(), ReqJSON["groupName"].Value<string>());
-                    writer.Write("{}");
-                    context.Response.StatusCode = 200;
+                    Http.WriteRequest(context, 200, "{}");
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }
@@ -251,35 +172,22 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
+                JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("xuid") || !ReqJSON.ContainsKey("groupName"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
                     PermissionsGroupManager.RemovePlayerFromGroup(ReqJSON["xuid"].Value<string>(), ReqJSON["groupName"].Value<string>());
-                    writer.Write("{}");
-                    context.Response.StatusCode = 200;
+                    Http.WriteRequest(context, 200, "{}");
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }
@@ -288,35 +196,21 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
+                JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("xuid"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
-                    List<string> groups = PermissionsGroupManager.GetGroupsOfPlayer(ReqJSON["xuid"].Value<string>());
-                    writer.Write(JsonConvert.SerializeObject(groups));
-                    context.Response.StatusCode = 200;
+                    Http.WriteRequest<List<string>>(context, 200, PermissionsGroupManager.GetGroupsOfPlayer(ReqJSON["xuid"].Value<string>()));
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }
@@ -325,35 +219,21 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
+                JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("groupName"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
-                    List<string> groups = PermissionsGroupManager.GetPlayersInGroup(ReqJSON["groupName"].Value<string>());
-                    writer.Write(JsonConvert.SerializeObject(groups));
-                    context.Response.StatusCode = 200;
+                    Http.WriteRequest<List<string>>(context, 200, PermissionsGroupManager.GetPlayersInGroup(ReqJSON["groupName"].Value<string>()));
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }
@@ -362,35 +242,22 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
+                JObject ReqJSON = Http.ReadRequest(context);
                 StreamWriter writer = new(context.Response.OutputStream);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("groupName"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
-                    List<string> permissions = PermissionsGroupManager.GetExplicitPermissionsOfGroup(ReqJSON["groupName"].Value<string>());
-                    writer.Write(JsonConvert.SerializeObject(permissions));
-                    context.Response.StatusCode = 200;
+                    Http.WriteRequest<List<string>>(context, 200, PermissionsGroupManager.GetExplicitPermissionsOfGroup(ReqJSON["groupName"].Value<string>()));
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }
@@ -399,35 +266,21 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
+                JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("groupName"))
                 {
-                    writer.Write("{}");
-                    context.Response.StatusCode = 400;
+                    Http.WriteRequest(context, 400, "{}");
                 }
                 else
                 {
-                    List<string> permissions = PermissionsGroupManager.GetAllPermissionsOfGroup(ReqJSON["groupName"].Value<string>());
-                    writer.Write(JsonConvert.SerializeObject(permissions));
-                    context.Response.StatusCode = 200;
+                    Http.WriteRequest<List<string>>(context, 200, PermissionsGroupManager.GetAllPermissionsOfGroup(ReqJSON["groupName"].Value<string>()));
                 }
-                writer.Close();
-                context.Response.Close();
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }
@@ -436,27 +289,13 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                StreamReader sw = new(context.Request.InputStream);
-                JObject ReqJSON = JObject.Parse(sw.ReadToEnd());
-                context.Response.ContentType = "text/plain;charset=UTF-8";
-                context.Response.AddHeader("Content-type", "text/plain");
-                context.Response.ContentEncoding = Encoding.UTF8;
-                StreamWriter writer = new(context.Response.OutputStream);
-                List<string> permissions = PermissionsGroupManager.GetGroups();
-                writer.Write(JsonConvert.SerializeObject(permissions));
-                context.Response.StatusCode = 200;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest<List<string>>(context, 200, PermissionsGroupManager.GetGroups());
                 return;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                StreamWriter writer = new(context.Response.OutputStream);
-                writer.Write("{}");
-                context.Response.StatusCode = 400;
-                writer.Close();
-                context.Response.Close();
+                Http.WriteRequest(context, 400, "{}");
                 return;
             }
         }
