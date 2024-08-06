@@ -31,6 +31,10 @@ namespace bedrock.NetHub.Utils
                 {
                     WriteFile(tPath, initData);
                 }
+                else
+                {
+                    WriteFile(tPath, string.Empty);
+                }
                 return;
             }
             else
@@ -70,6 +74,21 @@ namespace bedrock.NetHub.Utils
             file.Write(Content);
             file.Close();
             return;
+        }
+
+        public static byte[] ReadAsBytes(string tPath,Encoding targetEncoding = null)
+        {
+            StreamReader file = new(tPath);
+            string Content = file.ReadToEnd();
+            file.Close();
+            if (targetEncoding == null)
+            {
+                return Encoding.UTF8.GetBytes(Content);
+            }
+            else
+            {
+                return targetEncoding.GetBytes(Content);
+            }
         }
 
         public static JObject ReadAsJSON (string tPath)
