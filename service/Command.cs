@@ -41,7 +41,7 @@ namespace bedrock.NetHub.Service
             }
             Commands.Add(cmdNameWithNs, permissionWithNs);
             Program.GetPermissionsGroupManager().AddPermissionKey(permissionWithNs);
-            if (permission != null)
+            if (permission != null && permission.Length > 0)
             {
                 Program.stdhubLOGGER.Info(string.Format("Command registered: §a{0}§r with permission §b{1}",cmdNameWithNs,permissionWithNs));
             }

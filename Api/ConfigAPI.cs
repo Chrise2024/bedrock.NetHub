@@ -16,7 +16,6 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                
                 JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("namespace") || !ReqJSON.ContainsKey("defaults"))
                 {
@@ -28,12 +27,12 @@ namespace bedrock.NetHub.Api
                     string configFilePath = ReqJSON.ContainsKey("subConfigName") ? Path.Join(pluginRoot, ReqJSON["subConfigName"].Value<string>() + ".json") : Path.Join(pluginRoot, "config.json");
                     if (!File.Exists(configFilePath))
                     {
-                        FileIO.EnsureFile(configFilePath, ReqJSON["defaults"].Value<string>());
-                        Http.WriteRequest<JToken>(context,200, ReqJSON["defaults"]);
+                        //FileIO.EnsureFile(configFilePath, ReqJSON["defaults"].Value<string>());
+                        Http.WriteRequest<JObject>(context,200, ReqJSON["defaults"].ToObject<JObject>());
                     }
                     else
                     {
-                        JObject defaultConfig = ReqJSON["defaults"].Value<JObject>();
+                        JObject defaultConfig = ReqJSON["defaults"].ToObject<JObject>();
                         JObject readConfig = FileIO.ReadAsJSON(configFilePath);
                         defaultConfig.Merge(readConfig);
                         Http.WriteRequest<JObject>(context, 200, defaultConfig);
@@ -43,7 +42,7 @@ namespace bedrock.NetHub.Api
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }

@@ -42,7 +42,7 @@ namespace bedrock.NetHub.Api
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }
@@ -66,7 +66,7 @@ namespace bedrock.NetHub.Api
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }
@@ -90,7 +90,7 @@ namespace bedrock.NetHub.Api
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }
@@ -114,7 +114,7 @@ namespace bedrock.NetHub.Api
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }
@@ -138,7 +138,7 @@ namespace bedrock.NetHub.Api
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }
@@ -162,7 +162,7 @@ namespace bedrock.NetHub.Api
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }
@@ -186,7 +186,7 @@ namespace bedrock.NetHub.Api
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }
@@ -209,7 +209,7 @@ namespace bedrock.NetHub.Api
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }
@@ -232,7 +232,7 @@ namespace bedrock.NetHub.Api
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }
@@ -243,7 +243,6 @@ namespace bedrock.NetHub.Api
             try
             {
                 JObject ReqJSON = Http.ReadRequest(context);
-                StreamWriter writer = new(context.Response.OutputStream);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("groupName"))
                 {
                     Http.WriteRequest(context, 400, "{}");
@@ -256,7 +255,7 @@ namespace bedrock.NetHub.Api
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }
@@ -279,7 +278,7 @@ namespace bedrock.NetHub.Api
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }
@@ -294,7 +293,7 @@ namespace bedrock.NetHub.Api
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }

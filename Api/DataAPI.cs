@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace bedrock.NetHub.Api
 {
@@ -26,7 +27,7 @@ namespace bedrock.NetHub.Api
                     string dataFileDirname = Path.GetDirectoryName(dataFilePath);
                     if (!File.Exists(dataFilePath))
                     {
-                        Http.WriteRequest(context, 404, "{}");
+                        Http.WriteRequest(context, 200, "");
                     }
                     else
                     {
@@ -37,7 +38,7 @@ namespace bedrock.NetHub.Api
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }
@@ -47,7 +48,6 @@ namespace bedrock.NetHub.Api
         {
             try
             {
-                
                 JObject ReqJSON = Http.ReadRequest(context);
                 if (ReqJSON == null || !ReqJSON.ContainsKey("namespace") || !ReqJSON.ContainsKey("subDataPath") || !ReqJSON.ContainsKey("data"))
                 {
@@ -58,14 +58,14 @@ namespace bedrock.NetHub.Api
                     string dataFilePath = Path.Join(Program.pluginsRoot, ReqJSON["namespace"].Value<string>(), "data", ReqJSON["subDataPath"].Value<string>());
                     string dataFileDirname = Path.GetDirectoryName(dataFilePath);
                     FileIO.EnsureFile(dataFilePath);
-                    FileIO.WriteFile(dataFilePath,ReqJSON["data"].Value<string>());
+                    FileIO.WriteFile(dataFilePath,JsonConvert.SerializeObject(ReqJSON["data"]));
                     Http.WriteRequest(context, 200, "{}");
                 }
                 return;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }
@@ -99,7 +99,7 @@ namespace bedrock.NetHub.Api
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }

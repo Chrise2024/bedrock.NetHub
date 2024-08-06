@@ -33,7 +33,7 @@ namespace bedrock.NetHub.Service
         public static void WriteRequest(HttpListenerContext context, int statusCode, string content)
         {
             StreamWriter sw = new(context.Response.OutputStream);
-            sw.Write(JsonConvert.SerializeObject(new { data = content }));
+            sw.Write(JsonConvert.SerializeObject(content));
             context.Response.StatusCode = statusCode;
             sw.Close();
             context.Response.Close();
@@ -42,7 +42,7 @@ namespace bedrock.NetHub.Service
         public static void WriteRequest(HttpListenerContext context, int statusCode, object content)
         {
             StreamWriter sw = new(context.Response.OutputStream);
-            sw.Write(JsonConvert.SerializeObject(new { data = content }));
+            sw.Write(JsonConvert.SerializeObject(content));
             context.Response.StatusCode = statusCode;
             sw.Close();
             context.Response.Close();
@@ -51,7 +51,7 @@ namespace bedrock.NetHub.Service
         public static void WriteRequest<T>(HttpListenerContext context, int statusCode, T content)
         {
             StreamWriter sw = new(context.Response.OutputStream);
-            sw.Write(JsonConvert.SerializeObject(new { data = content }));
+            sw.Write(JsonConvert.SerializeObject(content));
             context.Response.StatusCode = statusCode;
             sw.Close();
             context.Response.Close();
@@ -70,7 +70,7 @@ namespace bedrock.NetHub.Service
             }
             try
             {
-                listener.Prefixes.Add(RootUrl);
+                listener.Prefixes.Add(RootUrl + "/");
             }
             catch (Exception e)
             {
@@ -98,7 +98,7 @@ namespace bedrock.NetHub.Service
 
         private void HandleRequest(HttpListenerContext context)
         {
-            string RawUrl = context.Request.RawUrl[2..];
+            string RawUrl = context.Request.RawUrl[1..];
             string[] Options = RawUrl.Split('/');
             context.Response.ContentType = "text/plain;charset=UTF-8";
             context.Response.AddHeader("Content-type", "text/plain");
@@ -234,7 +234,7 @@ namespace bedrock.NetHub.Service
             }
         }
 
-        [GeneratedRegex(@"^http://127.0.0.1:\d+/")]
+        [GeneratedRegex(@"^http://127.0.0.1:\d+")]
         private static partial Regex RootUrlRegex();
     }
 }

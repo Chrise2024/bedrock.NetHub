@@ -23,13 +23,13 @@ namespace bedrock.NetHub.Api
                 else
                 {
                     string xuid = Program.GetXuidManager().GetXuidByName(ReqJSON["name"].Value<string>());
-                    Http.WriteRequest(context, 200, xuid);
+                    Http.WriteRequest(context, 200, new { xuid });
                 }
                 return;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }
@@ -47,13 +47,13 @@ namespace bedrock.NetHub.Api
                 else
                 {
                     string name = Program.GetXuidManager().GetNameByXuid(ReqJSON["xuid"].Value<string>());
-                    Http.WriteRequest(context, 200, name);
+                    Http.WriteRequest(context, 200, new { name });
                 }
                 return;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Method: " + ex.TargetSite.Name + " run error.");
                 Http.WriteRequest(context, 400, "{}");
                 return;
             }

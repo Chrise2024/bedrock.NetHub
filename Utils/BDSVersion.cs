@@ -68,7 +68,7 @@ namespace bedrock.NetHub.Utils
             HttpClient httpClient = new();
             HttpResponseMessage response = httpClient.GetAsync(string.Format("https://registry.npmjs.org/{0}",packageName)).Result;
             //Console.WriteLine(response.Content.ReadAsStringAsync().Result);
-            JObject res = JObject.Parse(response.Content.ReadAsStringAsync().Result)["versions"].Value<JObject>();
+            JObject res = JObject.Parse(response.Content.ReadAsStringAsync().Result)["versions"].ToObject<JObject>();
             foreach (var index in res.Properties())
             {
                 versions.Add(index.Name);

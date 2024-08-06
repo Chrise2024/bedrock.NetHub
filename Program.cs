@@ -175,7 +175,7 @@ namespace bedrock.NetHub
             }
             else
             {
-                string listenerUrl = $"http://127.0.0.1:{port}/";
+                string listenerUrl = $"http://127.0.0.1:{port}";
                 FileIO.WriteFile(Path.Join(programRoot,"config", "default", "variables.json"),JsonConvert.SerializeObject(new { backendAddress = listenerUrl }));
                 TERMINAL = new(bdsCommand);
                 httpManager = new(listenerUrl);

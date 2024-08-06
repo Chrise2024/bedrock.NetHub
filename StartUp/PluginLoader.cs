@@ -88,7 +88,7 @@ namespace bedrock.NetHub.StartUp
                     {
                         StreamReader sw = new(pluginEntry.Open());
                         JObject pluginJSON = JObject.Parse(sw.ReadToEnd());
-                        JObject pluginPropertiesJSON = pluginJSON["plugin"].Value<JObject>();
+                        JObject pluginPropertiesJSON = pluginJSON["plugin"].ToObject<JObject>();
                         string pluginName = pluginPropertiesJSON["name"].Value<string>();
                         string pluginVersionString = pluginPropertiesJSON["version"].Value<string>();
                         string pluginDescription = pluginPropertiesJSON["description"].Value<string>();
