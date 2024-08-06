@@ -29,14 +29,14 @@ namespace bedrock.NetHub.Api
                     if (!File.Exists(configFilePath))
                     {
                         FileIO.EnsureFile(configFilePath, ReqJSON["defaults"].Value<string>());
-                        Http.WriteRequest(context,200, new { data = JsonConvert.SerializeObject(ReqJSON["defaults"]) });
+                        Http.WriteRequest<JToken>(context,200, ReqJSON["defaults"]);
                     }
                     else
                     {
                         JObject defaultConfig = ReqJSON["defaults"].Value<JObject>();
                         JObject readConfig = FileIO.ReadAsJSON(configFilePath);
                         defaultConfig.Merge(readConfig);
-                        Http.WriteRequest(context, 200, new { data = JsonConvert.SerializeObject(defaultConfig) });
+                        Http.WriteRequest<JObject>(context, 200, defaultConfig);
                     }
                 }
                 return;

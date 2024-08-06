@@ -32,11 +32,11 @@ namespace bedrock.NetHub.Api
                     {
                         if (respType.Equals("text"))
                         {
-                            Http.WriteRequest(context, 200, new { data = new { result = FileIO.ReadFile(tPath) } });
+                            Http.WriteRequest(context, 200, new { result = FileIO.ReadFile(tPath) });
                         }
                         else if (respType.Equals("bytes"))
                         {
-                            Http.WriteRequest(context, 200, new { data = new { result = FileIO.ReadAsBytes(tPath) } });
+                            Http.WriteRequest(context, 200, new { result = FileIO.ReadAsBytes(tPath) });
                         }
                         else
                         {

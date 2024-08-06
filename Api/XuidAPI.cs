@@ -23,7 +23,7 @@ namespace bedrock.NetHub.Api
                 else
                 {
                     string xuid = Program.GetXuidManager().GetXuidByName(ReqJSON["name"].Value<string>());
-                    Http.WriteRequest(context, 200, new { data = xuid});
+                    Http.WriteRequest(context, 200, xuid);
                 }
                 return;
             }
@@ -47,7 +47,7 @@ namespace bedrock.NetHub.Api
                 else
                 {
                     string name = Program.GetXuidManager().GetNameByXuid(ReqJSON["xuid"].Value<string>());
-                    Http.WriteRequest(context, 200, new { data = name });
+                    Http.WriteRequest(context, 200, name);
                 }
                 return;
             }

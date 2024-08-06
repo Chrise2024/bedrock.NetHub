@@ -132,7 +132,7 @@ namespace bedrock.NetHub.Api
                 else
                 {
                     bool res = PermissionsGroupManager.TestPermission(ReqJSON["xuid"].Value<string>(), ReqJSON["permission"].Value<string>());
-                    Http.WriteRequest(context, 200, JsonConvert.SerializeObject(new { data = res }));
+                    Http.WriteRequest<bool>(context, 200, res);
                 }
                 return;
             }
@@ -273,7 +273,7 @@ namespace bedrock.NetHub.Api
                 }
                 else
                 {
-                    Http.WriteRequest<List<string>>(context, 200, PermissionsGroupManager.GetAllPermissionsOfGroup(ReqJSON["groupName"].Value<string>()));
+                    Http.WriteRequest(context, 200, new { permissions = PermissionsGroupManager.GetAllPermissionsOfGroup(ReqJSON["groupName"].Value<string>()) });
                 }
                 return;
             }

@@ -33,7 +33,7 @@ namespace bedrock.NetHub.Service
         public static void WriteRequest(HttpListenerContext context, int statusCode, string content)
         {
             StreamWriter sw = new(context.Response.OutputStream);
-            sw.Write(content);
+            sw.Write(JsonConvert.SerializeObject(new { data = content }));
             context.Response.StatusCode = statusCode;
             sw.Close();
             context.Response.Close();
@@ -42,7 +42,7 @@ namespace bedrock.NetHub.Service
         public static void WriteRequest(HttpListenerContext context, int statusCode, object content)
         {
             StreamWriter sw = new(context.Response.OutputStream);
-            sw.Write(JsonConvert.SerializeObject(content));
+            sw.Write(JsonConvert.SerializeObject(new { data = content }));
             context.Response.StatusCode = statusCode;
             sw.Close();
             context.Response.Close();
@@ -51,7 +51,7 @@ namespace bedrock.NetHub.Service
         public static void WriteRequest<T>(HttpListenerContext context, int statusCode, T content)
         {
             StreamWriter sw = new(context.Response.OutputStream);
-            sw.Write(JsonConvert.SerializeObject(content));
+            sw.Write(JsonConvert.SerializeObject(new { data = content }));
             context.Response.StatusCode = statusCode;
             sw.Close();
             context.Response.Close();

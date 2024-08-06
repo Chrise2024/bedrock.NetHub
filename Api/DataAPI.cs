@@ -30,7 +30,7 @@ namespace bedrock.NetHub.Api
                     }
                     else
                     {
-                        Http.WriteRequest(context, 200, new { data = FileIO.ReadFile(dataFilePath) });
+                        Http.WriteRequest(context, 200, FileIO.ReadFile(dataFilePath));
                     }
                     return;
                 }
