@@ -70,14 +70,14 @@ namespace bedrock.NetHub
         {
             return xuidManager;
         }
-        private static int GetAllAvailableTCPPort(int startPort = 8000)
+        private static int GetAllAvailableTCPPort(int startPort = 8000,int endPort = 46800)
         {
             IPGlobalProperties iPGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
-            IPEndPoint[] iPEndPoints = iPGlobalProperties.GetActiveTcpListeners();
+            IPEndPoint[] iPEndPoints = iPGlobalProperties.GetActiveUdpListeners();
             List<int> APorts = [];
             foreach (IPEndPoint i in iPEndPoints)
             {
-                if (i.Port > startPort && i.Port <= 65535)
+                if (i.Port > Math.Max(0, startPort) && i.Port <= Math.Min(endPort,65535))
                 {
                     APorts.Add(i.Port);
                 }
@@ -156,6 +156,8 @@ namespace bedrock.NetHub
 
             FileIO.EnsurePath(pluginsRoot);
 
+            Init.Initialize();
+
             DirectoryInfo[] oldPluginFileInfo = new DirectoryInfo(Path.Join(levelRoot, "behavior_packs")).GetDirectories();
             foreach (DirectoryInfo index in oldPluginFileInfo)
             {
@@ -167,8 +169,7 @@ namespace bedrock.NetHub
             stdhubLOGGER.Info("§aRemoved old plugins.");
             PluginLoader.Load(pluginsRoot, levelRoot);
 
-            //int port = GetAllAvailableTCPPort(8000);
-            int port = 8001;
+            int port = GetAllAvailableTCPPort(8000,25600);
             if (port == -1)
             {
                 throw new Exception("No Avaliable Port");
@@ -179,14 +180,10 @@ namespace bedrock.NetHub
                 FileIO.WriteFile(Path.Join(programRoot,"config", "default", "variables.json"),JsonConvert.SerializeObject(new { backendAddress = listenerUrl }));
                 TERMINAL = new(bdsCommand);
                 httpManager = new(listenerUrl);
-                Task.Run(async () =>
-                {
-                    httpManager.Start();
-                });
-                //httpManager.Start();
+                httpManager.Start();
                 stdhubLOGGER.Info($"Backend server started on *:{port}");
-                TERMINAL.Start();
                 stdhubLOGGER.Info("Starting BDS process...");
+                TERMINAL.Start();
             }
         }
     }
