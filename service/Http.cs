@@ -81,18 +81,21 @@ namespace bedrock.NetHub.Service
         public async void Start()
         {
             listener.Start();
-            while (listener.IsListening)
+            await Task.Run(() =>
             {
-                try
+                while (listener.IsListening)
                 {
-                    HttpListenerContext context = listener.GetContext();
-                    HandleRequest(context);
+                    try
+                    {
+                        HttpListenerContext context = listener.GetContext();
+                        HandleRequest(context);
+                    }
+                    catch (Exception ex)
+                    {
+                        Program.stdhubLOGGER.Info(ex.Message);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Program.stdhubLOGGER.Info(ex.Message);
-                }
-            }
+            });
             listener.Stop();
         }
 

@@ -36,7 +36,7 @@ namespace bedrock.NetHub.Api
                         }
                         else if (respType.Equals("bytes"))
                         {
-                            Http.WriteRequest(context, 200, new { result = FileIO.ReadAsBytes(tPath) });
+                            Http.WriteRequest(context, 200, new { result = FileIO.ReadAsBinary(tPath) });
                         }
                         else
                         {

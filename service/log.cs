@@ -66,13 +66,14 @@ namespace bedrock.NetHub.service
             {
                 if (colorMap[m.Value] != null)
                 {
-                    content = content.Replace(m.Value, (string?)colorMap[m.Value]);
+                    content = content.Replace(m.Value, colorMap[m.Value]);
                 }
             }
             return content;
         }
 
         public void Info(string message, string timeString = null) {
+            message = ReplaceMinecraftColors(message);
             if (message.Contains('\n'))
             {
                 foreach (string i in message.Split("\r*\n"))
@@ -102,7 +103,8 @@ namespace bedrock.NetHub.service
 
         private void Log(string nameSpace,string content,string timeString = null)
         {
-            Console.WriteLine(string.Format("[{0}][{1}] ", timeString ?? GetFormatTime(), nameSpace) + GetLoggerRegex().Replace(content,""));
+            Console.WriteLine(string.Format("[{0}][{1}] ", timeString ?? GetFormatTime(), nameSpace) + content);
+            //Console.WriteLine(string.Format("[{0}][{1}] ", timeString ?? GetFormatTime(), nameSpace) + GetLoggerRegex().Replace(content,""));
             /*
             string[] SplitedContent = GetLoggerRegex().Split(content);
             MatchCollection maches = GetLoggerRegex().Matches(content);
@@ -163,7 +165,7 @@ namespace bedrock.NetHub.service
 
         public static void GeneralLog(string nameSpace,string content)
         {
-            Console.WriteLine(string.Format("[{0}][{1}] ", GetFormatTime(), nameSpace) + content);
+            Console.WriteLine(string.Format("[{0}][{1}] ", GetFormatTime(), nameSpace));
         }
 
         [GeneratedRegex("§[0-9a-fr]")]
