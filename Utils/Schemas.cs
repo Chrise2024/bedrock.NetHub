@@ -69,6 +69,11 @@ namespace bedrock.NetHub.Utils
         public string? playerId = playerId;
     }
 
+    public struct PermissionsJsonSchema
+    {
+        public List<string> allowed_modules;
+    }
+
     public abstract class Schemas
     {
         public static string ManifestFileGenerator(
