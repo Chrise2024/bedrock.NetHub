@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Reflection.Metadata;
 
 namespace bedrock.NetHub.Utils
 {
@@ -61,34 +62,24 @@ namespace bedrock.NetHub.Utils
 
         public static string ReadFile(string tPath)
         {
-            StreamReader file = new(tPath);
-            string Content = file.ReadToEnd();
-            file.Close();
-            return Content;
+            return File.ReadAllText(tPath);
         }
 
         public static void WriteFile(string tPath,string Content)
         {
-            EnsureFile(tPath);
-            StreamWriter file = new(tPath);
-            file.Write(Content);
-            file.Close();
+            File.WriteAllText(tPath, Content);
             return;
         }
 
-        public static byte[] ReadAsBytes(string tPath,Encoding targetEncoding = null)
+        public static byte[] ReadAsBinary(string tPath)
         {
-            StreamReader file = new(tPath);
-            string Content = file.ReadToEnd();
-            file.Close();
-            if (targetEncoding == null)
-            {
-                return Encoding.UTF8.GetBytes(Content);
-            }
-            else
-            {
-                return targetEncoding.GetBytes(Content);
-            }
+            return File.ReadAllBytes(tPath);
+        }
+
+        public static void WriteAsBytes(string tPath, byte[] Content, Encoding targetEncoding = null)
+        {
+            File.WriteAllBytes(tPath, Content);
+            return;
         }
 
         public static JObject ReadAsJSON (string tPath)
