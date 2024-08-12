@@ -8,6 +8,7 @@ using System.ComponentModel.Design;
 using bedrock.NetHub.Service;
 using Newtonsoft.Json;
 using bedrock.NetHub.Utils;
+using Newtonsoft.Json.Linq;
 
 namespace bedrock.NetHub.service
 {
@@ -22,6 +23,8 @@ namespace bedrock.NetHub.service
         private static bool testForServerPackStack = true;
 
         private static readonly XuidManager xuidManager = Program.GetXuidManager();
+
+        private string customCommandPrefix = ".";
         public Terminal(string bdsCommand)
         {
             bdsProcess.StartInfo.FileName = bdsCommand;
@@ -31,6 +34,31 @@ namespace bedrock.NetHub.service
             bdsProcess.StartInfo.RedirectStandardError = true;
             bdsProcess.OutputDataReceived += BDSStdOutHandler;
             bdsProcess.ErrorDataReceived += BDSStdErrorHandler;
+            string cPath = Path.Join(Program.pluginsRoot, "command-core", "config.json");
+            if (File.Exists(cPath))
+            {
+                try
+                {
+                    JObject configJSON = FileIO.ReadAsJSON(cPath);
+                    if (configJSON.ContainsKey("commandPrefix"))
+                    {
+                        customCommandPrefix = configJSON["commandPrefix"].Value<string>();
+                    }
+                    else
+                    {
+                        customCommandPrefix = ".";
+                    }
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    customCommandPrefix = ".";
+                }
+            }
+            else
+            {
+                customCommandPrefix = ".";
+            }
         }
 
         public void Start()
@@ -53,13 +81,26 @@ namespace bedrock.NetHub.service
                 while (!InputCommand.Equals("stop"))
                 {
                     InputCommand = Console.ReadLine();
-                    commandManager.ProcessConsoleCommand(InputCommand);
-                    if (InputCommand.Equals("666666"))
+                    if (InputCommand.StartsWith(customCommandPrefix))
                     {
-                        SendCommand("stop");
-                        break;
+                        commandManager.ProcessConsoleCommand(InputCommand[customCommandPrefix.Length..]);
                     }
-                    bdsWriter.WriteLine(InputCommand);
+                    else if (InputCommand.Equals("reload"))
+                    {
+                        if (!Program.IsDebug())
+                        {
+                            Program.stdhubLOGGER.Info("§cReload is a dangerous operation and can only be performed in debug mode.");
+                        }
+                        else
+                        {
+                            Program.GetCommandManager().ClearRegistry();
+                            Program.GetPermissionsGroupManager().ClearPermissionSettings();
+                        }
+                    }
+                    else
+                    {
+                        bdsWriter.WriteLine(InputCommand);
+                    }
                 }
                 bdsWriter.Close();
             });

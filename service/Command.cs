@@ -112,6 +112,10 @@ namespace bedrock.NetHub.Service
         }
         public void ClearRegistry()
         {
+            if (!Program.IsDebug())
+            {
+                throw new Exception("Illegal operation");
+            }
             Commands.Clear();
             DefaultCommandNames.Clear();
             Program.stdhubLOGGER.Info("Command registry cleared.");

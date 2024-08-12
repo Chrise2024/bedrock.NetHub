@@ -268,6 +268,10 @@ namespace bedrock.NetHub.Service
 
         public void ClearPermissionSettings()
         {
+            if (!Program.IsDebug())
+            {
+                throw new Exception("Illegal operation");
+            }
             PlayerGroupingInfo.Clear();
             PermissionsGroupMap.Clear();
             PermissionsGroupMapCache.Clear();
@@ -277,6 +281,10 @@ namespace bedrock.NetHub.Service
         }
         private void WriteGroup(string groupName,PermissionsGroupSchema groupData)
         {
+            if (Program.IsDebug())
+            {
+                return;
+            }
             FileIO.WriteAsJSON<PermissionsGroupSchema>(Path.Join(permissionDataPath,groupName+ ".group.json"),groupData);
         }
 
