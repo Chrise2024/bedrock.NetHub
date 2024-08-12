@@ -41,6 +41,10 @@ namespace bedrock.NetHub
 
         private static readonly XuidManager xuidManager = new();
 
+        private static readonly PluginLoader pluginLoader = new();
+
+        private static bool isDebug = false;
+
         public static string GetLevelRoot()
         {
             return levelRoot;
@@ -69,6 +73,11 @@ namespace bedrock.NetHub
         public static XuidManager GetXuidManager()
         {
             return xuidManager;
+        }
+
+        public static bool IsDebug()
+        {
+            return isDebug;
         }
         private static int GetAllAvailableTCPPort(int startPort = 8000,int endPort = 46800)
         {
@@ -141,7 +150,7 @@ namespace bedrock.NetHub
                 Environment.Exit(1);
             }
 
-            if (Array.IndexOf(args,"--debug-mode") != -1) {
+            if (args.Contains("--debug-mode")) {
                 stdhubLOGGER.Info(
                     "§e============ ATTENTION ============" +
                     "§eThe application is running under DEBUG MODE§r." +
@@ -150,6 +159,7 @@ namespace bedrock.NetHub
                     "§eHowever, it won\'t listen to newly added files, nor will it copy it to the world folder." +
                     "§eSo if you want to have a test on new plugins, please restart the application.\n"
                     );
+                isDebug = true;
             }
 
             FileIO.EnsurePath(Path.Join(levelRoot, "behavior_packs"));
@@ -167,7 +177,7 @@ namespace bedrock.NetHub
                 }
             }
             stdhubLOGGER.Info("§aRemoved old plugins.");
-            PluginLoader.Load(pluginsRoot, levelRoot);
+            pluginLoader.Load(pluginsRoot, levelRoot);
 
             int port = GetAllAvailableTCPPort(8000,25600);
             if (port == -1)
@@ -182,6 +192,10 @@ namespace bedrock.NetHub
                 httpManager = new(listenerUrl);
                 httpManager.Start();
                 stdhubLOGGER.Info($"Backend server started on *:{port}");
+                if (isDebug)
+                {
+
+                }
                 stdhubLOGGER.Info("Starting BDS process...");
                 TERMINAL.Start();
             }

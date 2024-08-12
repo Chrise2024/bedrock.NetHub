@@ -7,18 +7,94 @@ using Newtonsoft.Json.Linq;
 using System.IO.Compression;
 using System.Linq;
 using Newtonsoft.Json;
+using System.Reflection;
 
 namespace bedrock.NetHub.StartUp
 {
-    public abstract class PluginLoader
+    public class PluginLoader
     {
-        public static readonly string pluginEntryScriptName = "main.js";
-        public static int Load(string pluginPath,string levelRoot)
+        public readonly string pluginEntryScriptName = "main.js";
+
+        private readonly FileSystemWatcher fileSystemWatcher = new();
+
+        private string currentBDSVersionString = string.Empty;
+
+        private List<int> currentBDSVersionArray = [];
+
+        private VersionMappingSchema currentVersionMap = new();
+
+        private List<VersionMappingSchema> versionMapping = [];
+
+        private JArray worldBehaviorPacks = [];
+
+        private string worldBehaviorPacksFilePath = string.Empty;
+
+        private readonly Dictionary<string, string> pluginNameReference = [];
+        public PluginLoader()
+        {
+            fileSystemWatcher.Path = Program.pluginsRoot;
+            fileSystemWatcher.NotifyFilter =
+                NotifyFilters.Attributes
+              | NotifyFilters.CreationTime
+              | NotifyFilters.DirectoryName
+              | NotifyFilters.FileName
+              | NotifyFilters.LastAccess
+              | NotifyFilters.LastWrite
+              | NotifyFilters.Security
+              | NotifyFilters.Size;
+            fileSystemWatcher.Filter = "*.stdplugin";
+            fileSystemWatcher.Changed += OnPluginChange;
+            fileSystemWatcher.Created += OnPluginAdd;
+            fileSystemWatcher.Deleted += OnPluginDelete;
+        }
+
+        public void StartWatch()
+        {
+            fileSystemWatcher.EnableRaisingEvents = true;
+        }
+
+        public void StopWatch()
+        {
+            if (!Program.IsDebug())
+            {
+                return;
+            }
+            fileSystemWatcher.EnableRaisingEvents = false;
+            fileSystemWatcher.Dispose();
+        }
+
+        private void OnPluginAdd(object source, FileSystemEventArgs e)
+        {
+            ExtractPlugin(e.FullPath);
+            Program.stdhubLOGGER.Info(string.Format("§ePlugin §b{0}§e added. Please execute `§areload§e` AT THE TERMINAL to see changes.",e.Name));
+        }
+
+        private void OnPluginChange(object source, FileSystemEventArgs e)
+        {
+            ExtractPlugin(e.FullPath);
+            Program.stdhubLOGGER.Info(string.Format("§ePlugin §b{0}§e changed. Please execute `§areload§e` AT THE TERMINAL to see changes.", e.Name));
+        }
+
+        private void OnPluginDelete(object source, FileSystemEventArgs e)
+        {
+            string rootPath = Directory.GetDirectoryRoot(e.FullPath);
+            if (pluginNameReference.TryGetValue(e.Name, out string pluginPath))
+            {
+                if (Directory.Exists(pluginPath))
+                {
+                    Directory.Delete(Path.Join(rootPath, pluginPath), true);
+                    pluginNameReference.Remove(e.Name);
+                    Program.stdhubLOGGER.Info(string.Format("§ePlugin §b{0}§e deleted. Please execute `§areload§e` AT THE TERMINAL to see changes.", e.Name));
+                }
+            }
+        }
+
+        public int Load(string pluginPath,string levelRoot)
         {
             int loadedPluginNumber = 0;
             FileInfo[] pluginFileInfo = new DirectoryInfo(pluginPath).GetFiles();
             string originalWorldBehaviorPacksFilePath = Path.Join(levelRoot, "world_behavior_packs.json.original");
-            string worldBehaviorPacksFilePath = Path.Join(levelRoot, "world_behavior_packs.json");
+            worldBehaviorPacksFilePath = Path.Join(levelRoot, "world_behavior_packs.json");
             if (!File.Exists(originalWorldBehaviorPacksFilePath))
             {
                 if (!File.Exists(worldBehaviorPacksFilePath))
@@ -31,7 +107,7 @@ namespace bedrock.NetHub.StartUp
                 }
             }
 
-            JArray worldBehaviorPacks = FileIO.ReadAsJArray(originalWorldBehaviorPacksFilePath);
+            worldBehaviorPacks = FileIO.ReadAsJArray(originalWorldBehaviorPacksFilePath);
             List<string> plugins = [];
             foreach(FileInfo index in pluginFileInfo)
             {
@@ -41,13 +117,13 @@ namespace bedrock.NetHub.StartUp
                 }
             }
 
-            List<int> currentBDSVersionArray = BDSVersion.GetCurrentBDSVersion();
-            string currentBDSVersionString = string.Join(".", currentBDSVersionArray);
+            currentBDSVersionArray = BDSVersion.GetCurrentBDSVersion();
+            currentBDSVersionString = string.Join(".", currentBDSVersionArray);
             Program.stdhubLOGGER.Info(string.Format("Your current BDS version is: {0}", string.Join('.', currentBDSVersionArray)));
             Program.stdhubLOGGER.Info("If this does not match, please report an issue.");
-            List<VersionMappingSchema> versionMapping = BDSVersion.GetMinecraftServerApiVersionMapping();
+            versionMapping = BDSVersion.GetMinecraftServerApiVersionMapping();
             bool status = true;
-            VersionMappingSchema currentVersionMap = new("0.0.0", "0.0.0");
+            currentVersionMap = new("0.0.0", "0.0.0");
             foreach (VersionMappingSchema versionMap in versionMapping)
             {
                 if (versionMap.releaseVersion.Equals(currentBDSVersionString))
@@ -79,73 +155,82 @@ namespace bedrock.NetHub.StartUp
 
             foreach(string index in plugins)
             {
-                try
+                bool res = ExtractPlugin(index);
+                loadedPluginNumber += res ? 1 : 0;
+            }
+            Program.stdhubLOGGER.Info(string.Format("§aSuccessfully loaded §b{0}§a plugin(s).", loadedPluginNumber));
+            return loadedPluginNumber;
+        }
+
+        private bool ExtractPlugin(string pluginPath)
+        {
+            try
+            {
+                ZipArchive pluginArchive = ZipFile.OpenRead(pluginPath);
+                ZipArchiveEntry pluginEntry = pluginArchive.GetEntry("plugin.json");
+                ZipArchiveEntry scriptEntry = pluginArchive.GetEntry("script.js");
+                if (pluginEntry != null && scriptEntry != null)
                 {
-                    ZipArchive pluginArchive = ZipFile.OpenRead(index);
-                    ZipArchiveEntry pluginEntry = pluginArchive.GetEntry("plugin.json");
-                    ZipArchiveEntry scriptEntry = pluginArchive.GetEntry("script.js");
-                    if (pluginEntry != null && scriptEntry != null)
+                    StreamReader sw = new(pluginEntry.Open());
+                    JObject pluginJSON = JObject.Parse(sw.ReadToEnd());
+                    JObject pluginPropertiesJSON = pluginJSON["plugin"].ToObject<JObject>();
+                    string pluginName = pluginPropertiesJSON["name"].Value<string>();
+                    string pluginVersionString = pluginPropertiesJSON["version"].Value<string>();
+                    string pluginDescription = pluginPropertiesJSON["description"].Value<string>();
+                    string targetMinecraftVersion = pluginJSON["targetMinecraftVersion"].Value<string>();
+
+                    if (!currentBDSVersionString.Equals(targetMinecraftVersion))
                     {
-                        StreamReader sw = new(pluginEntry.Open());
-                        JObject pluginJSON = JObject.Parse(sw.ReadToEnd());
-                        JObject pluginPropertiesJSON = pluginJSON["plugin"].ToObject<JObject>();
-                        string pluginName = pluginPropertiesJSON["name"].Value<string>();
-                        string pluginVersionString = pluginPropertiesJSON["version"].Value<string>();
-                        string pluginDescription = pluginPropertiesJSON["description"].Value<string>();
-                        string targetMinecraftVersion = pluginJSON["targetMinecraftVersion"].Value<string>();
-
-                        if (!currentBDSVersionString.Equals(targetMinecraftVersion))
-                        {
-                            Program.stdhubLOGGER.Info(string.Format("§eThe Minecraft version requirement of plugin §b{0}§e (§c{1}§e)", pluginName, targetMinecraftVersion));
-                            Program.stdhubLOGGER.Info(string.Format("§edoes not match current version (§a{0}§e).", currentBDSVersionString));
-                            Program.stdhubLOGGER.Info("§eWe will still enable this plugin.");
-                            Program.stdhubLOGGER.Info("§eWe will still enable this plugin.");
-                            Program.stdhubLOGGER.Info("§eBut when it does not function as expected, do not report any issue.");
-                        }
-                        string pluginUUID = Guid.NewGuid().ToString();
-                        string scriptModuleUUID = Guid.NewGuid().ToString();
-                        List<int> pluginVersionArray = TypeCast.VersionStringToArray(pluginVersionString);
-                        Program.stdhubLOGGER.Info(string.Format("Loading plugin §b{0}§r...", pluginName));
-                        string tempPluginName = "__stdhub_plugins_" + pluginUUID;
-                        string pluginRoot = Path.Join(Program.GetLevelRoot(), "behavior_packs", tempPluginName);
-                        string pluginScriptRoot = Path.Join(pluginRoot, "scripts");
-                        
-                        FileIO.EnsurePath(pluginRoot);
-                        FileIO.EnsurePath(pluginScriptRoot);
-
-                        string ManifestFileContent = Schemas.ManifestFileGenerator(
-                            pluginName,
-                            pluginDescription,
-                            pluginUUID,
-                            pluginVersionArray,
-                            currentBDSVersionArray,
-                            scriptModuleUUID,
-                            pluginEntryScriptName,
-                            currentVersionMap.apiVersion
-                            );
-                        FileIO.WriteFile(Path.Join(pluginRoot, "manifest.json"), ManifestFileContent);
-
-                        string scriptPath = Path.Join(pluginScriptRoot, pluginEntryScriptName);
-                        FileIO.EnsureFile(scriptPath);
-                        sw = new(scriptEntry.Open());
-                        FileIO.WriteFile(scriptPath, sw.ReadToEnd());
-                        worldBehaviorPacks.Add(JsonConvert.DeserializeObject(string.Format("{{\"pack_id\": \"{0}\",\"version\": [{1}]}}", pluginUUID, string.Join(',',pluginVersionArray))));
-
-                        FileIO.WriteAsJSON(worldBehaviorPacksFilePath, worldBehaviorPacks);
-                        loadedPluginNumber++;
+                        Program.stdhubLOGGER.Info(string.Format("§eThe Minecraft version requirement of plugin §b{0}§e (§c{1}§e)", pluginName, targetMinecraftVersion));
+                        Program.stdhubLOGGER.Info(string.Format("§edoes not match current version (§a{0}§e).", currentBDSVersionString));
+                        Program.stdhubLOGGER.Info("§eWe will still enable this plugin.");
+                        Program.stdhubLOGGER.Info("§eBut when it does not function as expected, do not report any issue.");
                     }
-                    else
-                    {
-                        continue;
-                    }
+                    string pluginUUID = Guid.NewGuid().ToString();
+                    string scriptModuleUUID = Guid.NewGuid().ToString();
+                    List<int> pluginVersionArray = TypeCast.VersionStringToArray(pluginVersionString);
+                    Program.stdhubLOGGER.Info(string.Format("Loading plugin §b{0}§r...", pluginName));
+                    string tempPluginName = "__stdhub_plugins_" + pluginUUID;
+                    string pluginRoot = Path.Join(Program.GetLevelRoot(), "behavior_packs", tempPluginName);
+                    string pluginScriptRoot = Path.Join(pluginRoot, "scripts");
+
+                    FileIO.EnsurePath(pluginRoot);
+                    FileIO.EnsurePath(pluginScriptRoot);
+
+                    string ManifestFileContent = Schemas.ManifestFileGenerator(
+                        pluginName,
+                        pluginDescription,
+                        pluginUUID,
+                        pluginVersionArray,
+                        currentBDSVersionArray,
+                        scriptModuleUUID,
+                        pluginEntryScriptName,
+                        currentVersionMap.apiVersion
+                        );
+                    FileIO.WriteFile(Path.Join(pluginRoot, "manifest.json"), ManifestFileContent);
+
+                    string scriptPath = Path.Join(pluginScriptRoot, pluginEntryScriptName);
+                    FileIO.EnsureFile(scriptPath);
+                    sw = new(scriptEntry.Open());
+                    FileIO.WriteFile(scriptPath, sw.ReadToEnd());
+                    worldBehaviorPacks.Add(JsonConvert.DeserializeObject(string.Format("{{\"pack_id\": \"{0}\",\"version\": [{1}]}}", pluginUUID, string.Join(',', pluginVersionArray))));
+
+                    FileIO.WriteAsJSON(worldBehaviorPacksFilePath, worldBehaviorPacks);
+                    pluginNameReference.Add(pluginName, tempPluginName);
+                    pluginArchive.Dispose();
+                    return true;
                 }
-                catch (Exception ex)
+                else
                 {
-                    Program.stdhubLOGGER.Info(string.Format("Bad plugin {0}:",index) + ex.Message);
-                    return 0;
+                    pluginArchive.Dispose();
+                    return false;
                 }
             }
-            return loadedPluginNumber;
+            catch(Exception ex)
+            {
+                Program.stdhubLOGGER.Info(string.Format("Bad plugin {0}:", pluginPath) + ex.Message);
+                return false;
+            }
         }
     }
 }
