@@ -2,6 +2,6 @@
 
 ## Automatically patch `level.dat`(Completed)
 
-## Debug Mode and Options
+## Debug Mode and Options(Completed)
 
 ## ~~Optimize Code~~
